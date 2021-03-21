@@ -1,35 +1,46 @@
-import { useEffect, useState } from "react";
+import { ContactsTable } from "../ContactsTable";
+import { useContacts } from "./useContacts";
+import { makeStyles, createStyles } from "@material-ui/core/styles";
+import Container from "@material-ui/core/Container";
+import Grid from "@material-ui/core/Grid";
+import { Typography } from "@material-ui/core";
+
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    root: {
+      marginTop: theme.spacing(4),
+    },
+    headContainer: {
+      marginBottom: theme.spacing(2),
+    },
+  })
+);
 
 export const Contacts = () => {
-  const [contacts, setContacts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsError] = useState(false);
+  const classes = useStyles();
+  const contacts = useContacts();
 
-  useEffect(() => {
-    const getContacts = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch("https://randomuser.me/api/?results=200");
-        const { results, error } = await response.json();
-        if (error) {
-          throw new Error(error);
-        }
-        setContacts(results);
-        setIsError(false);
-      } catch (e) {
-        setIsError(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    getContacts();
-  }, []);
-  if (isLoading) {
-    return <div>...loading</div>;
-  }
+  return (
+    <Container className={classes.root}>
+      <Grid container>
+        <Grid item xs={12} className={classes.headContainer}>
+          <Typography variant="h3" component="h1">
+            Contacts
+          </Typography>
+        </Grid>
+        <Grid item xs={12}>
+          {(() => {
+            if (contacts.isLoading) {
+              return <div>...loading</div>;
+            }
 
-  if (isError) {
-    return <div>...error</div>;
-  }
-  return <div>Contacts: {contacts[0].name.first}</div>;
+            if (contacts.isError) {
+              return <div>...error</div>;
+            }
+            return <ContactsTable data={contacts.data} />;
+          })()}
+        </Grid>
+      </Grid>
+    </Container>
+  );
 };
